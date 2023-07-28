@@ -23,6 +23,13 @@ class _ScanPageState extends State<ScanPage> {
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    controller
+        ?.resumeCamera(); // Resume the camera when the widget is inserted into the tree.
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: QRView(
