@@ -75,11 +75,11 @@ class ScanPageState extends State<ScanPage> {
     );
   }
 
-  @override
-  void dispose() {
-    controller?.dispose();
-    super.dispose();
-  }
+  // @override
+  // void dispose() {
+  //   controller?.dispose();
+  //   super.dispose();
+  // }
 
   void resetScanner() {
     setState(() {

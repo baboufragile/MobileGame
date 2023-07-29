@@ -4,6 +4,7 @@ import '../login/login.dart';
 import '../card/card.dart'; // assuming you have 'card.dart' in the 'card' directory
 import '../camera/camera.dart';
 import 'package:app/home/changelog.dart';
+import '../nfc.dart';
 
 class BottomBar extends StatefulWidget {
   const BottomBar({Key? key}) : super(key: key);
@@ -15,6 +16,7 @@ class BottomBar extends StatefulWidget {
 class _BottomBarState extends State<BottomBar> {
   int _selectedIndex = 0;
   final scanPageKey = GlobalKey<ScanPageState>();
+  final nfcPageKey = GlobalKey<SensorsState>();
   ValueNotifier<String> lastScannedValue = ValueNotifier<String>('');
 
   void updateIndex(int index, [String? scanValue]) {
@@ -33,6 +35,10 @@ class _BottomBarState extends State<BottomBar> {
   void onScannedValue(String value) async {
     print("onScannedValue method triggered with value $value");
     await Future.delayed(Duration.zero);
+
+    if (!mounted)
+      return; // Add this line to check if the widget is still mounted
+
     setState(() {
       _selectedIndex = 2; // Assuming API Card is at index 2
     });
@@ -62,7 +68,10 @@ class _BottomBarState extends State<BottomBar> {
       case 0:
         return ChangelogPage();
       case 1:
-        return Login();
+        return Sensors(
+          key: nfcPageKey,
+          onNfcScanned: onScannedValue,
+        );
       case 2:
         return ValueListenableBuilder<String>(
           valueListenable: lastScannedValue,

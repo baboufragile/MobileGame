@@ -22,11 +22,11 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin {
     _initializeAnimation();
   }
 
-  @override
-  void dispose() {
-    _controller?.dispose();
-    super.dispose();
-  }
+  // @override
+  // void dispose() {
+  //   _controller?.dispose();
+  //   super.dispose();
+  // }
 
   void _initializeAnimation() {
     _controller = AnimationController(
