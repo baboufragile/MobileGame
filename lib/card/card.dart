@@ -44,6 +44,7 @@ class _ApiCardState extends State<ApiCard> {
 
   @override
   Widget build(BuildContext context) {
+    print("Building ApiCard with id: ${widget.id}");
     return Scaffold(
       appBar: AppBar(
         title: Text('API Page'),
@@ -64,14 +65,6 @@ class _ApiCardState extends State<ApiCard> {
                 ),
               if (data.containsKey('action'))
                 Text(data['action'], style: TextStyle(fontSize: 24.0)),
-              ElevatedButton(
-                onPressed: () {
-                  widget.resetScanner();
-                  Navigator.pop(
-                      context); // and then go back to the scanner page
-                },
-                child: Text('Scan another QR code'),
-              ),
             ],
           ),
         ),

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:salomon_bottom_bar/salomon_bottom_bar.dart';
-import '../login/login.dart'; // Import the LoginPage
-import '../card/card.dart';
+import '../login/login.dart';
+import '../card/card.dart'; // assuming you have 'card.dart' in the 'card' directory
 import '../camera/camera.dart';
 import 'package:app/home/changelog.dart';
 
@@ -15,11 +15,29 @@ class BottomBar extends StatefulWidget {
 class _BottomBarState extends State<BottomBar> {
   int _selectedIndex = 0;
   final scanPageKey = GlobalKey<ScanPageState>();
+  ValueNotifier<String> lastScannedValue = ValueNotifier<String>('');
 
-  void updateIndex(int index) {
+  void updateIndex(int index, [String? scanValue]) {
+    print(
+        "updateIndex method triggered with index $index and scanValue $scanValue");
+    if (index == 3 && _selectedIndex != 3 && scanPageKey.currentState != null)
+      scanPageKey.currentState!.resetScanner();
     setState(() {
       _selectedIndex = index;
+      if (scanValue != null) {
+        print('Scanned value received in Navbar: $scanValue');
+      }
     });
+  }
+
+  void onScannedValue(String value) async {
+    print("onScannedValue method triggered with value $value");
+    await Future.delayed(Duration.zero);
+    setState(() {
+      _selectedIndex = 2; // Assuming API Card is at index 2
+    });
+    lastScannedValue.value = value; // Update the ValueNotifier
+    updateIndex(_selectedIndex, value);
   }
 
   @override
@@ -30,70 +48,62 @@ class _BottomBarState extends State<BottomBar> {
           selectedItemColor: const Color(0xff6200ee),
           unselectedItemColor: const Color(0xff757575),
           onTap: (index) {
+            if (index == 3 && scanPageKey.currentState != null)
+              scanPageKey.currentState!.resetScanner();
             updateIndex(index);
           },
           items: _navBarItems),
-      body: Stack(
-        children: [
-          _buildOffstageNavigator(0),
-          _buildOffstageNavigator(1),
-          _buildOffstageNavigator(2),
-          _buildOffstageNavigator(3),
-        ],
-      ),
+      body: _buildBody(_selectedIndex),
     );
   }
 
-  Map<String, WidgetBuilder> _routeBuilders(BuildContext context, int index) {
-    return {
-      '/': (context) {
-        return [
-          ChangelogPage(),
-          Login(),
-          Text('Search Page'),
-          ScanPage(
-            key: scanPageKey,
-            resetScanner: () => scanPageKey.currentState!.resetScanner(),
-          ),
-        ].elementAt(index);
-      },
-    };
+  Widget _buildBody(int index) {
+    switch (index) {
+      case 0:
+        return ChangelogPage();
+      case 1:
+        return Login();
+      case 2:
+        return ValueListenableBuilder<String>(
+          valueListenable: lastScannedValue,
+          builder: (context, value, child) {
+            print("Rebuilding ApiCard with value: $value");
+            return ApiCard(
+                id: value,
+                resetScanner: () => scanPageKey.currentState!.resetScanner());
+          },
+        );
+      case 3:
+        return ScanPage(
+          key: scanPageKey,
+          resetScanner: () => scanPageKey.currentState!.resetScanner(),
+          onScannedValue: onScannedValue,
+        );
+      default:
+        return SizedBox.shrink(); // default, should not occur
+    }
   }
 
-  Widget _buildOffstageNavigator(int index) {
-    var routeBuilders = _routeBuilders(context, index);
-    return Offstage(
-      offstage: _selectedIndex != index,
-      child: Navigator(
-        onGenerateRoute: (routeSettings) {
-          return MaterialPageRoute(
-            builder: (context) => routeBuilders[routeSettings.name]!(context),
-          );
-        },
-      ),
-    );
-  }
+  final _navBarItems = [
+    SalomonBottomBarItem(
+      icon: const Icon(Icons.home),
+      title: const Text("Home"),
+      selectedColor: Colors.purple,
+    ),
+    SalomonBottomBarItem(
+      icon: const Icon(Icons.favorite_border),
+      title: const Text("Likes"),
+      selectedColor: Colors.pink,
+    ),
+    SalomonBottomBarItem(
+      icon: const Icon(Icons.search),
+      title: const Text("Search"),
+      selectedColor: Colors.orange,
+    ),
+    SalomonBottomBarItem(
+      icon: const Icon(Icons.person),
+      title: const Text("User"),
+      selectedColor: Colors.teal,
+    ),
+  ];
 }
-
-final _navBarItems = [
-  SalomonBottomBarItem(
-    icon: const Icon(Icons.home),
-    title: const Text("Home"),
-    selectedColor: Colors.purple,
-  ),
-  SalomonBottomBarItem(
-    icon: const Icon(Icons.favorite_border),
-    title: const Text("Likes"),
-    selectedColor: Colors.pink,
-  ),
-  SalomonBottomBarItem(
-    icon: const Icon(Icons.search),
-    title: const Text("Search"),
-    selectedColor: Colors.orange,
-  ),
-  SalomonBottomBarItem(
-    icon: const Icon(Icons.person),
-    title: const Text("user"),
-    selectedColor: Colors.teal,
-  ),
-];

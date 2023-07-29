@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
-import '../card/card.dart'; // assuming you have 'card.dart' in the 'card' directory
-import 'dart:io' show Platform; // Required for Platform.isAndroid/isIOS
+import '../card/card.dart';
+import 'dart:io' show Platform;
 
 class ScanPage extends StatefulWidget {
   final Function() resetScanner;
+  final Function(String) onScannedValue;
 
-  ScanPage({Key? key, required this.resetScanner}) : super(key: key);
+  ScanPage({Key? key, required this.resetScanner, required this.onScannedValue})
+      : super(key: key);
 
   @override
   ScanPageState createState() => ScanPageState();
@@ -32,10 +34,14 @@ class ScanPageState extends State<ScanPage> {
     this.controller = controller;
 
     controller.scannedDataStream.listen((scanData) {
-      setState(() {
-        result = scanData;
-        controller.pauseCamera();
-      });
+      if (scanData.code != null) {
+        print("Scanned Data Code: ${scanData.code}");
+        setState(() {
+          result = scanData;
+          controller.pauseCamera();
+        });
+        widget.onScannedValue(scanData.code!);
+      }
     });
   }
 
@@ -61,7 +67,7 @@ class ScanPageState extends State<ScanPage> {
             ),
           ),
           ElevatedButton(
-            onPressed: resetScanner,
+            onPressed: widget.resetScanner,
             child: Text('Reset Scanner'),
           ),
         ],
