@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:app/widget/bottom_nav.dart';
 
 class ChangelogPage extends StatelessWidget {
   final String versionNumber =

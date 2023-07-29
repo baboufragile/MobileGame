@@ -12,15 +12,16 @@ class BottomBar extends StatefulWidget {
   State<BottomBar> createState() => _BottomBarState();
 }
 
-final List<Widget> _pages = [
-  ChangelogPage(),
-  Login(), // Placeholder for the likes page
-  Text('Search Page'), // Placeholder for the search page
-  ScanPage(), // Login page when user icon is clicked
-];
-
 class _BottomBarState extends State<BottomBar> {
   int _selectedIndex = 0;
+  final scanPageKey = GlobalKey<ScanPageState>();
+
+  void updateIndex(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -29,10 +30,7 @@ class _BottomBarState extends State<BottomBar> {
           selectedItemColor: const Color(0xff6200ee),
           unselectedItemColor: const Color(0xff757575),
           onTap: (index) {
-            debugPrint('Changing index to $index');
-            setState(() {
-              _selectedIndex = index;
-            });
+            updateIndex(index);
           },
           items: _navBarItems),
       body: Stack(
@@ -51,9 +49,12 @@ class _BottomBarState extends State<BottomBar> {
       '/': (context) {
         return [
           ChangelogPage(),
-          Login(), // Placeholder for the likes page
-          Text('Search Page'), // Placeholder for the search page
-          ScanPage(),
+          Login(),
+          Text('Search Page'),
+          ScanPage(
+            key: scanPageKey,
+            resetScanner: () => scanPageKey.currentState!.resetScanner(),
+          ),
         ].elementAt(index);
       },
     };
@@ -96,12 +97,3 @@ final _navBarItems = [
     selectedColor: Colors.teal,
   ),
 ];
-
-// class PlaceholderPage extends StatelessWidget {
-//   @override
-//   Widget build(BuildContext context) {
-//     return Center(
-//       child: Text('Scan a QR code to see card details.'),
-//     );
-//   }
-// }
