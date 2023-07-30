@@ -5,6 +5,9 @@ import '../card/card.dart'; // assuming you have 'card.dart' in the 'card' direc
 import '../camera/camera.dart';
 import 'package:app/home/changelog.dart';
 import '../nfc.dart';
+import 'package:flutter/services.dart'; // Importez la bibliothèque flutter/services.dart pour utiliser SystemChrome
+
+import 'package:auto_size_text/auto_size_text.dart';
 
 class BottomBar extends StatefulWidget {
   const BottomBar({Key? key}) : super(key: key);
@@ -44,6 +47,20 @@ class _BottomBarState extends State<BottomBar> {
     });
     lastScannedValue.value = value; // Update the ValueNotifier
     updateIndex(_selectedIndex, value);
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    // Cacher la barre de notification lorsque le widget est créé
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive);
+  }
+
+  @override
+  void dispose() {
+    // Rétablir l'affichage de la barre de notification lorsque le widget est détruit
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+    super.dispose();
   }
 
   @override
@@ -89,7 +106,7 @@ class _BottomBarState extends State<BottomBar> {
           onScannedValue: onScannedValue,
         );
       default:
-        return SizedBox.shrink(); // default, should not occur
+        return MyHomePage(); // Replace with the widget you want to show by default
     }
   }
 
@@ -115,4 +132,23 @@ class _BottomBarState extends State<BottomBar> {
       selectedColor: Colors.teal,
     ),
   ];
+}
+
+class MyHomePage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("Mon application"),
+      ),
+      body: Center(
+        child: AutoSizeText(
+          "Contenu de votre application",
+          style: TextStyle(fontSize: 40),
+          maxLines: 2,
+          textAlign: TextAlign.center,
+        ),
+      ),
+    );
+  }
 }

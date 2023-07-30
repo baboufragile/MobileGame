@@ -37,6 +37,10 @@ dependencies:
   persistent_bottom_nav_bar: 5.0.2
   nfc_manager: 3.3.0
   flutter_nfc_kit : 3.3.1
+  status_bar_control: ^3.2.1
+  auto_size_text: ^3.0.0
+  
+  
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
