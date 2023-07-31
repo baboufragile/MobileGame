@@ -16,6 +16,7 @@ class ApiCard extends StatefulWidget {
 
 class _ApiCardState extends State<ApiCard> {
   Map<String, dynamic> data = {};
+  final controller = TextEditingController();
   late DetailsDialogContent dialogContent;
 
   @override
@@ -43,15 +44,66 @@ class _ApiCardState extends State<ApiCard> {
           data['coinFlip'] = Random().nextBool() ? 'Pile' : 'Face';
         }
         dialogContent = DetailsDialogContent(data: data);
+        switch (data['serv_action']) {
+          case 'hasGoodJoker':
+            callApiForAction('good_joker');
+            break;
+          case 'hasBadJoker':
+            callApiForAction('bad_joker');
+            break;
+          case 'stillNoAces':
+            callApiForAction('no_aces');
+            break;
+          default:
+            break;
+        }
       });
     } else {
       throw Exception('Failed to load data');
     }
   }
 
+  Future<void> callApiForAction(String action) async {
+    final response = await http.post(
+      Uri.parse('https://apigame.baptistefremaux.fr/card/${widget.id}'),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode(<String, String>{
+        'action': action,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      print('Response body for $action: ${response.body}');
+    } else {
+      throw Exception('Failed to send data');
+    }
+  }
+
+  Future<void> postData() async {
+    final response = await http.post(
+      Uri.parse('https://apigame.baptistefremaux.fr/card/${widget.id}'),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode(<String, String>{
+        'input': controller.text,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      print('Response body: ${response.body}');
+    } else {
+      throw Exception('Failed to send data');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     print("Building ApiCard with id: ${widget.id}");
+    bool shouldShowInputField =
+        ['LinkEnum', 'rule'].contains(data['serv_action']);
     return Scaffold(
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -82,6 +134,15 @@ class _ApiCardState extends State<ApiCard> {
                     maxLines: 10,
                   ),
                 ),
+              ),
+            if (shouldShowInputField)
+              TextField(
+                controller: controller,
+              ),
+            if (shouldShowInputField)
+              ElevatedButton(
+                onPressed: postData,
+                child: Text('Valider'),
               ),
             ElevatedButton(
               child: Text('Détails'),
