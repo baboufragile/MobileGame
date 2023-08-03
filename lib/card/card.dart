@@ -7,8 +7,12 @@ import 'package:http/http.dart' as http;
 class ApiCard extends StatefulWidget {
   final String id;
   final Function() resetScanner;
-
-  ApiCard({required this.id, required this.resetScanner});
+  final String selectedRoomId;
+  ApiCard({
+    required this.id,
+    required this.resetScanner,
+    required this.selectedRoomId,
+  });
 
   @override
   State<ApiCard> createState() => _ApiCardState();
@@ -26,18 +30,23 @@ class _ApiCardState extends State<ApiCard> {
   }
 
   Future<void> getData() async {
-    final response = await http.get(
-      Uri.parse('https://apigame.baptistefremaux.fr/card/${widget.id}'),
-      headers: {
-        'Authorization':
-            'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6IiAgdGVzdEBnbWFpbC5jb20iLCJpYXQiOjE2OTA0OTA3MTZ9.3Pxi7ujy0zoh89Zrjl4l1z5n1KijpdzqnzRDfK-3ta8',
+    var token =
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImEiLCJpYXQiOjE2OTEwMDYwNTF9.YzSufVn_6GkacafbWtPSeak4avgVUAevpHFbB-w7xwM';
+    final response = await http.post(
+      Uri.parse(
+          'https://apigame.baptistefremaux.fr/sessions/${widget.selectedRoomId}/cards'),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+        'Authorization': 'Bearer $token',
       },
+      body: json.encode({"label": widget.id}),
     );
     print('Status code: ${response.statusCode}');
     print('Response body: ${response.body}');
     if (response.statusCode == 200) {
       setState(() {
         data = jsonDecode(response.body);
+        data = data['card'];
         if (data['serv_action'] == 'randomDice') {
           data['diceRoll'] = Random().nextInt(6) + 1;
         } else if (data['serv_action'] == 'random') {
@@ -111,15 +120,15 @@ class _ApiCardState extends State<ApiCard> {
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: <Widget>[
-            if (data.containsKey('id'))
+            if (data.containsKey('label'))
               Text(
                 "Salut je crois que ta pioché ça : ",
                 style: TextStyle(fontSize: 24.0),
               ),
-            if (data.containsKey('id'))
+            if (data.containsKey('label'))
               Expanded(
                 flex: 3,
-                child: Image.asset('assets/${data['id']}.png',
+                child: Image.asset('assets/${data['label']}.png',
                     fit: BoxFit.scaleDown),
               ),
             if (data.containsKey('action'))
@@ -147,7 +156,7 @@ class _ApiCardState extends State<ApiCard> {
             ElevatedButton(
               child: Text('Détails'),
               onPressed: () {
-                if (data.containsKey('details')) {
+                if (data.containsKey('detail')) {
                   showDialog(
                     context: context,
                     builder: (context) => AlertDialog(
@@ -203,7 +212,7 @@ class _DetailsDialogContentState extends State<DetailsDialogContent> {
 
   @override
   Widget build(BuildContext context) {
-    String dialogContent = widget.data['details'];
+    String dialogContent = widget.data['detail'];
 
     switch (widget.data['serv_action']) {
       case 'randomDice':
@@ -235,7 +244,7 @@ class _DetailsDialogContentState extends State<DetailsDialogContent> {
           ],
         );
       default:
-        dialogContent += '\n' + widget.data['details'];
+        dialogContent += '\n' + widget.data['detail'];
         return Text(dialogContent);
     }
   }
